@@ -18,7 +18,10 @@ func main() {
 	}
 
 	// Add commands
-	rootCmd.AddCommand(generateCmd())
+	rootCmd.AddCommand(
+		generateCmd(),
+		newProjectCmd(),
+	)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
