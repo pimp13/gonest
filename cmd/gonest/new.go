@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,6 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+//go:embed templates/*
+var templates embed.FS
 
 func newProjectCmd() *cobra.Command {
 	return &cobra.Command{
@@ -32,10 +36,10 @@ func createProject(projectName string) {
 
 	// Project structure
 	dirs := []string{
-		"app",
-		"common/database",
-		"config",
-		"modules",
+		"src/app",
+		"src/common/database",
+		"src/config",
+		"src/modules",
 	}
 
 	// Create directories
@@ -51,165 +55,152 @@ func createProject(projectName string) {
 	files := map[string]string{
 		"main.go": `package main
 
-			import (
-				"{{.ProjectName}}/app"
-				"{{.ProjectName}}/common/database"
-				"{{.ProjectName}}/config"
-				"log"
-			)
+import (
+	"{{.ProjectName}}/src/app"
+	"{{.ProjectName}}/src/common/database"
+	"{{.ProjectName}}/src/config"
+	"log"
+)
 
-			func main() {
-				cfg := config.LoadConfig()
+func main() {
+	cfg := config.LoadConfig()
 
-				// Initialize database connection
-				database.Init()
+	// Initialize database connection
+	database.Init()
 
-				application := app.NewApp(cfg)
+	application := app.NewApp(cfg)
 
-				if err := application.Bootstrap(); err != nil {
-					log.Fatalf("Failed to start server: %v", err)
-				}
-			}`,
+	if err := application.Bootstrap(); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}`,
 
 		"go.mod": `module {{.ProjectName}}
 
-				go 1.24
+go 1.24
 
-				require (
-					github.com/gin-gonic/gin v1.10.1
-					github.com/spf13/cobra v1.9.1
-					gorm.io/driver/postgres v1.6.0
-					gorm.io/gorm v1.25.7
-				)`,
+require (
+	github.com/gin-gonic/gin v1.10.1
+	github.com/spf13/cobra v1.9.1
+	gorm.io/driver/postgres v1.6.0
+	gorm.io/gorm v1.25.7
+)`,
 
-		"config/config.go": `package config
+		"src/config/config.go": `package config
 
-			import "os"
+import "os"
 
-			type Config struct {
-				Port string
-			}
+type Config struct {
+	Port string
+}
 
-			func LoadConfig() *Config {
-				return &Config{
-					Port: getEnv("PORT", "8080"),
-				}
-			}
+func LoadConfig() *Config {
+	return &Config{
+		Port: getEnv("PORT", "8080"),
+	}
+}
 
-			func getEnv(key, defaultValue string) string {
-				if value := os.Getenv(key); value != "" {
-					return value
-				}
-				return defaultValue
-			}`,
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}`,
 
-		"app/app.go": `package app
+		"src/app/app.go": `package app
 
-			import (
-				"{{.ProjectName}}/config"
-				"fmt"
-				"github.com/gin-gonic/gin"
-			)
+import (
+	"{{.ProjectName}}/src/config"
+	"fmt"
+	"github.com/gin-gonic/gin"
+)
 
-			type App struct {
-				config *config.Config
-				router *gin.Engine
-			}
+type App struct {
+	config *config.Config
+	router *gin.Engine
+}
 
-			func NewApp(cfg *config.Config) *App {
-				return &App{
-					config: cfg,
-					router: gin.Default(),
-				}
-			}
+func NewApp(cfg *config.Config) *App {
+	return &App{
+		config: cfg,
+		router: gin.Default(),
+	}
+}
 
-			func (a *App) Bootstrap() error {
-				// Setup routes
-				a.setupRoutes()
+func (a *App) Bootstrap() error {
+	// Setup routes
+	a.setupRoutes()
 
-				// Start server
-				return a.router.Run(fmt.Sprintf(":%s", a.config.Port))
-			}
+	// Start server
+	return a.router.Run(fmt.Sprintf(":%s", a.config.Port))
+}
 
-			func (a *App) setupRoutes() {
-				api := a.router.Group("/api")
-				
-				// Register module routes here
-				// Example: users.NewUserModule().RegisterRoutes(api)
-			}`,
+func (a *App) setupRoutes() {
+	api := a.router.Group("/api")
+	
+	// Register module routes here
+	// Example: users.NewUserModule().RegisterRoutes(api)
+}`,
 
-		"common/database/database.go": `package database
+		"src/common/database/database.go": `package database
 
-				import (
-					"fmt"
-					"gorm.io/driver/postgres"
-					"gorm.io/gorm"
-					"log"
-					"os"
-				)
+import (
+	"fmt"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"log"
+	"os"
+)
 
-				var DB *gorm.DB
+var DB *gorm.DB
 
-				func Init() {
-					dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-						getEnv("DB_HOST", "localhost"),
-						getEnv("DB_USER", "postgres"),
-						getEnv("DB_PASSWORD", "postgres"),
-						getEnv("DB_NAME", "gonest"),
-						getEnv("DB_PORT", "5432"),
-					)
+func Init() {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		getEnv("DB_HOST", "localhost"),
+		getEnv("DB_USER", "postgres"),
+		getEnv("DB_PASSWORD", "postgres"),
+		getEnv("DB_NAME", "gonest"),
+		getEnv("DB_PORT", "5432"),
+	)
 
-					db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-					if err != nil {
-						log.Fatalf("Failed to connect to database: %v", err)
-					}
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
 
-					DB = db
-					log.Println("Database connected successfully")
-				}
+	DB = db
+	log.Println("Database connected successfully")
+}
 
-				func getEnv(key, defaultValue string) string {
-					if value := os.Getenv(key); value != "" {
-						return value
-					}
-					return defaultValue
-				}`,
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}`,
 
 		".gitignore": `# Binaries
-				*.exe
-				*.exe~
-				*.dll
-				*.so
-				*.dylib
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-				# Environment variables
-				.env
+# Environment variables
+.env
 
-				# IDE specific files
-				.idea/
-				.vscode/
-				*.swp
-				*.swo
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
 
-				# Dependency directories
-				vendor/
+# Dependency directories
+vendor/
 
-				# Build output
-				bin/
-				dist/`,
-
-		"README.md": `# {{.ProjectName}}
-
-		A Go-Nest project
-
-		## Setup
-
-		1. Install dependencies:
-		go mod tidy
-
-		2. Run the project:
-		go run main.go
-		`,
+# Build output
+bin/
+dist/`,
 	}
 
 	data := struct {
@@ -218,15 +209,14 @@ func createProject(projectName string) {
 		ProjectName: projectName,
 	}
 
+	// Create files from map templates
 	for filename, content := range files {
-		// Parse template
 		tmpl, err := template.New(filename).Parse(content)
 		if err != nil {
 			fmt.Printf("Error parsing template for %s: %v\n", filename, err)
 			continue
 		}
 
-		// Create file
 		filePath := filepath.Join(projectName, filename)
 		file, err := os.Create(filePath)
 		if err != nil {
@@ -234,7 +224,6 @@ func createProject(projectName string) {
 			continue
 		}
 
-		// Execute template
 		if err := tmpl.Execute(file, data); err != nil {
 			fmt.Printf("Error writing template to %s: %v\n", filename, err)
 			file.Close()
@@ -242,6 +231,31 @@ func createProject(projectName string) {
 		}
 
 		file.Close()
+	}
+
+	// Create README.md from embedded template
+	readmeContent, err := templates.ReadFile("templates/readme.md")
+	if err != nil {
+		fmt.Printf("Error reading README template: %v\n", err)
+		return
+	}
+
+	tmpl, err := template.New("README.md").Parse(string(readmeContent))
+	if err != nil {
+		fmt.Printf("Error parsing README template: %v\n", err)
+		return
+	}
+
+	readmeFile, err := os.Create(filepath.Join(projectName, "README.md"))
+	if err != nil {
+		fmt.Printf("Error creating README.md: %v\n", err)
+		return
+	}
+	defer readmeFile.Close()
+
+	if err := tmpl.Execute(readmeFile, data); err != nil {
+		fmt.Printf("Error writing README.md: %v\n", err)
+		return
 	}
 
 	fmt.Printf("Successfully created new Go-Nest project: %s\n", projectName)

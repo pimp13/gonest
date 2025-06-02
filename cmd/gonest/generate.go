@@ -172,7 +172,7 @@ func generateComponent(componentType, name string) {
 	}
 
 	// Create module directory
-	modulePath := filepath.Join("modules", strings.ToLower(name))
+	modulePath := filepath.Join("src/modules", strings.ToLower(name))
 	err := os.MkdirAll(modulePath, 0755)
 	if err != nil {
 		fmt.Printf("Error creating directory: %v\n", err)
