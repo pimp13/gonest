@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/pimp13/gonest/config"
+	"github.com/pimp13/gonest/src/common/config"
 
 	"github.com/gin-gonic/gin"
 )

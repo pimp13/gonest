@@ -24,6 +24,7 @@ func generateCmd() *cobra.Command {
 		generateController(),
 		generateService(),
 		generateModule(),
+		generateRepository(),
 	)
 
 	return cmd

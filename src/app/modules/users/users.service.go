@@ -2,7 +2,7 @@ package users
 
 import (
 	"errors"
-	"github.com/pimp13/gonest/config"
+	"github.com/pimp13/gonest/src/common/config"
 )
 
 type User struct {

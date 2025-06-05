@@ -38,8 +38,8 @@ func createProject(projectName string) {
 	dirs := []string{
 		"src/app",
 		"src/common/database",
-		"src/config",
-		"src/modules",
+		"src/common/config",
+		"src/app",
 	}
 
 	// Create directories
@@ -58,7 +58,7 @@ func createProject(projectName string) {
 import (
 	"{{.ProjectName}}/src/app"
 	"{{.ProjectName}}/src/common/database"
-	"{{.ProjectName}}/src/config"
+	"{{.ProjectName}}/src/common/config"
 	"log"
 )
 
@@ -83,20 +83,34 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/spf13/cobra v1.9.1
 	gorm.io/driver/postgres v1.6.0
+	github.com/joho/godotenv v1.5.1
 	gorm.io/gorm v1.25.7
 )`,
 
 		"src/config/config.go": `package config
 
-import "os"
+import (
+	"os"
+	_ "github.com/joho/godotenv/autoload"
+)
+
+type AppConfig struct {
+	Port string
+	Name string
+	Url string
+}
 
 type Config struct {
-	Port string
+	AppConfig *AppConfig
 }
 
 func LoadConfig() *Config {
 	return &Config{
-		Port: getEnv("PORT", "8080"),
+		AppConfig: &AppConfig{
+			Port: getEnv("APP_PORT", "3000"),
+			Name: getEnv("APP_NAME", "GoNest"),
+			Url: getEnv("APP_URL", "http://localhost:3000"),
+		}
 	}
 }
 
@@ -110,7 +124,7 @@ func getEnv(key, defaultValue string) string {
 		"src/app/app.go": `package app
 
 import (
-	"{{.ProjectName}}/src/config"
+	"{{.ProjectName}}/src/common/config"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )

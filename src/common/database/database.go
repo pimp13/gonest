@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/pimp13/gonest/config"
+	"github.com/pimp13/gonest/src/common/config"
 	"github.com/pimp13/gonest/modules/users/models"
 	"log"
 

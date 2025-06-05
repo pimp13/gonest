@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/pimp13/gonest/config"
-	"github.com/pimp13/gonest/modules/users"
+	"github.com/pimp13/gonest/src/app/modules/users"
+	"github.com/pimp13/gonest/src/common/config"
 )
 
 type App struct {

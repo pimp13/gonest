@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/pimp13/gonest/app"
-	"github.com/pimp13/gonest/common/database"
-	"github.com/pimp13/gonest/config"
+	"github.com/pimp13/gonest/src/app"
+	"github.com/pimp13/gonest/src/common/database"
+	"github.com/pimp13/gonest/src/common/config"
 	"log"
 )
 
