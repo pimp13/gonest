@@ -190,7 +190,7 @@ func generateComponent(componentType, name string) {
 		Name:      caser.String(name),
 		Package:   strings.ToLower(name),
 		LowerName: strings.ToLower(name),
-	}
+	}		
 
 	// Generate the component
 	filename := fmt.Sprintf("%s.%s.go", strings.ToLower(name), componentType)
